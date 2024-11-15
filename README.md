@@ -1,3 +1,5 @@
+# Laion 데이터 안 씀
+
 # OpenFlamingo Training
 To train OpenFlamingo, please ensure your environment matches that of `environment.yml`.
 
