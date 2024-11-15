@@ -65,8 +65,8 @@ def main():
         action="store_true",
         help="delete previous checkpoint when saving new checkpoint",
     )
-    parser.add_argument("--batch_size_mmc4", type=int, default=128)
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
+    parser.add_argument("--batch_size_mmc4", type=int, default=8)  # 배치 크기 줄임
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=2)  # Accumulation Steps 추가
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--learning_rate", default=1e-4, type=float)
     parser.add_argument(
@@ -81,7 +81,7 @@ def main():
     parser.add_argument(
         "--precision",
         choices=["amp_bf16", "amp_bfloat16", "bf16", "fp16", "fp32"],
-        default="fp32",
+        default="fp16",  # Mixed Precision 활성화
         help="Floating point precision.",
     )
     parser.add_argument(
@@ -112,7 +112,7 @@ def main():
         help="path to c4 shards, this should be a glob pattern such as /path/to/shards/shard-{0000..0999}.tar",
         default="/home/yoon/Desktop/SKKU/NLP/fewer_faces_core/docs_no_face_shard_*.jsonl.zip" 
     )
-    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--workers", type=int, default=0)  # num_workers 줄임
     parser.add_argument("--train_num_samples_mmc4", type=int, default=10000)
     parser.add_argument("--dataset_resampled", action="store_true")
     parser.add_argument(
@@ -153,6 +153,9 @@ def main():
 
     args = parser.parse_args()
 
+    # Set environment for memory management
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+
     # Set seed
     random_seed(args.seed)
 
@@ -168,7 +171,7 @@ def main():
         args.tokenizer_path if args.tokenizer_path else args.lm_path,
         cross_attn_every_n_layers=args.cross_attn_every_n_layers,
         use_local_files=args.offline,
-        gradient_checkpointing=args.gradient_checkpointing,
+        gradient_checkpointing=True,  # Gradient Checkpointing 활성화
         freeze_lm_embeddings=args.freeze_lm_embeddings,
     )
     model = model.to(device)
